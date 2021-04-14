@@ -24,19 +24,11 @@ class Order(models.Model):
     create_at    = models.DateField(auto_now_add=True)
     updated_at   = models.DateField(auto_now=True)
     cart         = models.ForeignKey("Cart", on_delete=models.CASCADE)
-    user_coupon  = models.ForeignKey("User_Coupon", null=True, on_delete=models.CASCADE)
+    user_coupon  = models.ForeignKey("User_Coupon", null=True, on_delete=models.SET_NULL)
     used_mileage = models.IntegerField(null=True)
 
     class Meta:
         db_table = 'orders'
-
-class Refund(models.Model):
-    order         = models.ForeignKey("Order", on_delete=models.CASCADE)
-    refund_date   = models.DateField()
-    refund_status = models.SmallIntegerField()
-
-    class Meta:
-        db_table = 'refunds'
 
 class User_Coupon(models.Model):
     create_at = models.DateField(auto_now_add=True)

@@ -13,7 +13,7 @@ class Product(models.Model):
     sales_rate  = models.IntegerField()
     description = models.TextField()
     category    = models.ForeignKey('Category', on_delete=models.CASCADE)
-    color       = models.ForeignKey('Color', on_delete=models.CASCADE)
+    color       = models.ForeignKey('Color', on_delete=models.SET_NULL, null=True)
     season      = models.ManyToManyField('Season', through='Product_Season')
     size        = models.ManyToManyField('Size', through='Product_Detail')
 
