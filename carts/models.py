@@ -25,7 +25,7 @@ class Order(models.Model):
     updated_at   = models.DateTimeField(auto_now=True)
     cart         = models.ForeignKey("Cart", on_delete=models.CASCADE)
     user_coupon  = models.ForeignKey("UserCoupon", null=True, on_delete=models.SET_NULL)
-    using_mileage = models.IntegerField(null=True)
+    using_mileage = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'orders'
