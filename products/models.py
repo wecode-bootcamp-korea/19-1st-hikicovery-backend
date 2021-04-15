@@ -33,15 +33,16 @@ class Size(models.Model):
         db_table = 'sizes'
 
 class Image(models.Model):
-    image_url = models.URLField(max_length=500)
-    product   = models.ForeignKey('Product', on_delete=models.CASCADE)
+    image_url            = models.URLField(max_length=500)
+    product              = models.ForeignKey('Product', on_delete=models.CASCADE)
     image_classification = models.ForeignKey('ImageClassification', on_delete=models.SET_NULL, null=True)
     
     class Meta:
         db_table = 'images'
 
 class Color(models.Model):
-    name = models.CharField(max_length=45)
+    name      = models.CharField(max_length=45)
+    image_url = models.URLField(max_length=500)
 
     class Meta:
         db_table = 'colors'
