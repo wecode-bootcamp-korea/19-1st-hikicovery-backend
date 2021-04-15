@@ -8,13 +8,13 @@ class Review(models.Model):
     update_at      = models.DateTimeField(auto_now=True)
     color_review   = models.SmallIntegerField(null=True)
     size_review    = models.SmallIntegerField(null=True)
-    product_detail = models.ForeignKey('products.Product_Detail', on_delete=models.CASCADE)
+    product_detail = models.ForeignKey('products.ProductDetail', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'reviews'
 
-class Review_Photo(models.Model):
-    image_url = models.CharField(max_length=500)
+class ReviewPhoto(models.Model):
+    image_url = models.URLField(max_length=500)
     review    = models.ForeignKey('Review', on_delete=models.CASCADE)
 
     class Meta:
