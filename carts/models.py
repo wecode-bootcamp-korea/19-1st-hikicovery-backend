@@ -1,31 +1,24 @@
 from django.db import models
 
 
-class ProductDetailCart(models.Model):
+class ProductDetailOrder(models.Model):
     quantity       = models.IntegerField()
     product_detail = models.ForeignKey("products.ProductDetail", on_delete=models.CASCADE)
-    cart           = models.ForeignKey("Cart", on_delete=models.CASCADE)
+    order          = models.ForeignKey("Order", on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'product_detail_carts'
-
-class Cart(models.Model):
-    create_at      = models.DateTimeField(auto_now_add=True)
-    updated_at     = models.DateTimeField(auto_now=True)
-    user           = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    product_detail = models.ManyToManyField("products.ProductDetail", through="ProductDetailCart")
-
-    class Meta:
-        db_table = 'carts'
+        db_table = 'product_detail_orders'
 
 class Order(models.Model):
-    status       = models.CharField(max_length=45)
-    is_delivery  = models.SmallIntegerField()
-    create_at    = models.DateTimeField(auto_now_add=True)
-    updated_at   = models.DateTimeField(auto_now=True)
-    cart         = models.ForeignKey("Cart", on_delete=models.CASCADE)
-    user_coupon  = models.ForeignKey("UserCoupon", null=True, on_delete=models.SET_NULL)
-    using_mileage = models.IntegerField(default=0)
+    status          = models.SmallIntegerField()
+    is_delivery     = models.SmallIntegerField()
+    create_at       = models.DateTimeField(auto_now_add=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+    cart            = models.ForeignKey("Cart", on_delete=models.CASCADE)
+    user_coupon     = models.ForeignKey("UserCoupon", null=True, on_delete=models.SET_NULL)
+    using_mileage   = models.IntegerField(default=0)
+    product_detail  = models.ManyToManyField("products.ProductDetail", through="ProductDetailOrder")
+    user          = models.ForeignKey("users.User", on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'orders'
