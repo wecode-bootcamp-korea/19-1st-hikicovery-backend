@@ -14,7 +14,6 @@ class Order(models.Model):
     is_delivery     = models.SmallIntegerField()
     create_at       = models.DateTimeField(auto_now_add=True)
     updated_at      = models.DateTimeField(auto_now=True)
-    cart            = models.ForeignKey("Cart", on_delete=models.CASCADE)
     user_coupon     = models.ForeignKey("UserCoupon", null=True, on_delete=models.SET_NULL)
     using_mileage   = models.IntegerField(default=0)
     product_detail  = models.ManyToManyField("products.ProductDetail", through="ProductDetailOrder")
