@@ -26,7 +26,7 @@ class SignUpView(View):
             if User.objects.filter(Q(account=account) |
                                    Q(email=email)
                                    ).exists():
-                return JsonResponse({'message': 'ACCOUNT_EXISTS'})
+                return JsonResponse({'message': 'ACCOUNT_EXISTS'}, status=400)
 
             if not account or not password or \
                     not name or not email or not phone_number:
