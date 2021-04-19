@@ -9,7 +9,7 @@ from django.db.models       import Q
 from products.models        import Product,ProductDetail
 from carts.models           import ProductDetailOrder,Order
 from users.models           import User
-from models                 import Review,ReviewPhoto,WishList
+from models                 import Review,ReviewPhoto,Wishlist
 
 class ReviewCreateView(View):
     def post(self,request):
@@ -53,7 +53,7 @@ class WishListCreateView(View):
     def post(self,request):
         data = json.loads(request.body)
 
-        WishList.objects.create(
+        Wishlist.objects.create(
             user_id    = User.objects.get(user_id = User.id),
             product_id = Product.objects.get(product_id = Product.id)
         )
