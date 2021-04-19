@@ -46,6 +46,7 @@ class ReviewShowView(View):
                 'review_photo'  : review_photo.image_url,
                 'size'          : ProductDetail.size_id,
                 'color'         : Product.color_id
+
             }
         return JsonResponse({'data': json.dumps(data)}, status=200)
 
