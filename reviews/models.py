@@ -9,6 +9,7 @@ class Review(models.Model):
     color_review   = models.SmallIntegerField(null=True)
     size_review    = models.SmallIntegerField(null=True)
     product_detail = models.ForeignKey('products.ProductDetail', on_delete=models.CASCADE)
+    user_id        = models.Foreignkey('users.User', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         db_table = 'reviews'

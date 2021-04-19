@@ -9,7 +9,6 @@ class User(models.Model):
     birthday     = models.DateField()
     address      = models.CharField(max_length=100)
     mileage      = models.IntegerField()
-    product      = models.ManyToManyField('products.Product',through='reviews.Wishlist')
 
     class Meta:
         db_table = 'users'
