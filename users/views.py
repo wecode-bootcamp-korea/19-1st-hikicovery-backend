@@ -12,7 +12,7 @@ from users.validations import validate_email, validate_phone, validate_password,
 
 
 class SignUpView(View):
-    def post(self, request):
+    def post(self,request):
         data         = json.loads(request.body)
         account      = data['account']
         password     = data['password']
@@ -20,7 +20,6 @@ class SignUpView(View):
         name         = data['name']
         phone_number = data['phone_number']
         birthday     = data['birthday']
-
 
         try:
             if User.objects.filter(Q(account=account) |
@@ -49,8 +48,8 @@ class SignUpView(View):
             User.objects.create(
                 account      = account,
                 password     = hashed_password,
-                phone_number = phone_number,
                 name         = name,
+                phone_number = phone_number,
                 email        = email,
                 birthday     = birthday,
                 address      = data.get('address', null),
@@ -64,9 +63,8 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({'message': 'KEY_ERROR'}, status=400)
 
-
 class LogInView(View):
-    def post(self, request):
+    def post(self,request):
 
         try:
             data = json.loads(request.body)
