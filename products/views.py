@@ -25,7 +25,7 @@ class BestItemView(View):
                         'stock':ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],                       
                     }                        
                 for product in products[:(SHOW_NUMBER-1)]]
-        return JsonResponse({'best_items':best_items}, status=200)
+        return JsonResponse({'MESSAGE':'SUCCESS','best_items':best_items}, status=200)
 
 class ProductView(View):
     def get(self, request):
@@ -73,29 +73,31 @@ class ProductView(View):
                 }
             for product in product_in_page]
         
-
-        return JsonResponse({'category_name':Category.objects.get(id=category).name if category else None,'product_list':product_list}, status=200)
+        return JsonResponse({'MESSAGE':'SUCCESS','category_name':Category.objects.get(id=category).name if category else None,'product_list':product_list}, status=200)
 
 class ProductDetailView(View):
     def get(self, request, product_id):
-        product = Product.objects.get(id=product_id)
-        product_info   = [
-            {
-                'id'               : product.id,
-                'name'             : product.name,
-                'price'            : product.price,
-                'image'            : [{
-                    'name'         :image.image_classification.name,
-                    'image_url'    : image.image_url} for image in product.image_set.all()],
-                'product_stock'    : [
-                    {
-                    'size'         :size.name,
-                    'stock'        :ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],
-                'season'           : [season.name for season in product.season.all()],
-                'color'            : [
-                    {
-                    'product_id'   :color_product.id,
-                    'product_image':color_product.image_set.all()[0].image_url} for color_product in Product.objects.filter(name=product.name)],
-                }
-            ]
-        return JsonResponse({'MESSAGE':'SUCCESS','product_info': product_info}, status=200)
+        try:    
+            product = Product.objects.get(id=product_id)
+            product_info   = [
+                {
+                    'id'               : product.id,
+                    'name'             : product.name,
+                    'price'            : product.price,
+                    'image'            : [{
+                        'name'         :image.image_classification.name,
+                        'image_url'    : image.image_url} for image in product.image_set.all()],
+                    'product_stock'    : [
+                        {
+                        'size'         :size.name,
+                        'stock'        :ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],
+                    'season'           : [season.name for season in product.season.all()],
+                    'color'            : [
+                        {
+                        'product_id'   :color_product.id,
+                        'product_image':color_product.image_set.all()[0].image_url} for color_product in Product.objects.filter(name=product.name)],
+                    }
+                ]
+            return JsonResponse({'MESSAGE':'SUCCESS','product_info': product_info}, status=200)
+        except Product.DoesNotExist:
+            return JsonResponse({'MESSAGE':'PRODUCT_DOES_NOT_EXIST'}, status=400)            
