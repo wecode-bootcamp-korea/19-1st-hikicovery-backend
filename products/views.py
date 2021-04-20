@@ -40,10 +40,10 @@ class ProductView(View):
         if category:
             q &= Q(category_id = category)
         if color:
-            q &= Q(color_id = color)
+            q &= Q(color_name__in = color)
         if size:
             q &= Q(size__name__in = size)
-        q &= Q(price__range = (price_lower_range,price_upper_range))
+        q &= Q(price__range = (int(price_lower_range),int(price_upper_range)))
         
         products = Product.objects.filter(q).order_by(ordering)
         
