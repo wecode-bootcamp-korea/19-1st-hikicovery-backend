@@ -3,12 +3,14 @@ import re
 def validate_account(value):
     ACCOUNT_REG = r"(^[a-zA-Z0-9]+.{6,15}$)"
     regex = re.compile(ACCOUNT_REG)
+
     if regex.match(value):
         return True
 
 def validate_email(value):
     EMAIL_REG = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
     regex = re.compile(EMAIL_REG)
+
     if regex.match(value):
         return True
 
