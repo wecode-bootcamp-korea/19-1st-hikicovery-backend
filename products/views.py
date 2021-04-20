@@ -1,87 +1,101 @@
 import json
 
 from django.http  import JsonResponse
-from django.views import View 
+from django.views import View
+from django.db.models import Q 
 
-from products.models import *
+from products.models import Product, ProductDetail, ProductSale, ProductSeason, Season, Size, Image, ImageClassification, Category
 
-class ProductCategoryView(View):
+class BestItemView(View):
     def get(self, request):
-        ordering_id        = request.GET.get('ordering', 0)
-        category           = request.GET.get('category', None)
-        size               = request.GET.get('size', None)
-        page               = request.GET.get('PageNo',1)
-        
-        if category:
-            products       = Product.objects.filter(category_id=category)
-        else:
-            products       = Product.objects.all()
-        
-        product_number     = len(products)
-        showing_number     = request.GET.get('Show',10)
-        
-        ReleaseDateOrder   = products.order_by('-release_at')
-        PriceOrderHigh     = products.order_by('-price')
-        PriceOrderLow      = products.order_by('price')       
-        ProductSalesOrder  = products.order_by('-productsale__product_sales')
-
-        ordering_list = [ReleaseDateOrder,PriceOrderHigh,PriceOrderLow,ProductSalesOrder]   
-        best_items    = []
-        product_list  = []
-
-        if category==None:
-            for product in ProductSalesOrder:
-                product_images = [{'name':image.image_classification.name, 'image_url' : image.image_url} for image in product.image_set.all()]
-                product_stocks = [{'size':size.name,'stock':ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()]
-                best_items.append(
-                    {
-                        'id'            : product.id,
-                        'name'          : product.name,
-                        'price'         : product.price,
-                        'image'         : product_images,
-                        'product_stock' : product_stocks,                       
-                        }                        
-                    )
-
-        if page <= (product_number // showing_number):
-            product_in_page = ordering_list[ordering_id][showing_number*(page-1) : showing_number*page]
-        else:
-            product_in_page = ordering_list[ordering_id][showing_number*(page-1) : showing_number*(page-1) + product_number % showing_number]
-
-        for product in product_in_page:
-            product_images = [{'name':image.image_classification.name, 'image_url' : image.image_url} for image in product.image_set.all()]
-            product_stocks = [{'size':size.name,'stock':ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()]
-            product_list.append(
+        products = Product.objects.all().order_by('-productsale__product_sales')
+        SHOW_NUMBER = 8
+        best_items=[
                 {
                     'id'            : product.id,
                     'name'          : product.name,
-                    'price'         : product.price,
-                    'image'         : product_images,
-                    'product_stock' : product_stocks,  
-                    }
-                )
-        if category:
-            return JsonResponse({'category_name':Category.objects.get(id=category).name,'product_list':product_list}, status=200)
-        return JsonResponse({'best_itmes':best_items,'product_list':product_list}, status=200)
+                    'price'         : product.price,    
+                    'image'         : [
+                        {
+                        'name'      :image.image_classification.name,
+                        'image_url' : image.image_url} for image in product.image_set.all()],
+                    'product_stock' : [
+                        {
+                        'size' :size.name,
+                        'stock':ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],                       
+                    }                        
+                for product in products[:(SHOW_NUMBER-1)]]
+        return JsonResponse({'best_items':best_items}, status=200)
 
 class ProductView(View):
-    def get(self, request, product_id):
+    def get(self, request):
+        ordering           = request.GET.get('ordering', '-release_at')        
+        category           = request.GET.get('category', None)
+        size               = request.GET.getlist('size', None)
+        color              = request.GET.getlist('color', None)
+        price_upper_range  = request.GET.get('PriceUpper', 1000000)
+        price_lower_range  = request.GET.get('PriceLower', 0)
 
-        product = Product.objects.filter(id=product_id)[0]
-        product_info = []
-        product_seasons = [season.name for season in product.season.all()]
-        product_images = [{'name':image.image_classification.name, 'image_url' : image.image_url} for image in product.image_set.all()]
-        product_stocks = [{'size':size.name,'stock':ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()]
-        product_colors = [{'product_id':color_product.id,'product_image':color_product.image_set.all()[0].image_url} for color_product in Product.objects.filter(name=product.name)]
-        product_info.append(
+        q=Q()
+        if category:
+            q &= Q(category_id = category)
+        if color:
+            q &= Q(color_id = color)
+        if size:
+            q &= Q(size__name__in = size)
+        q &= Q(price__range = (price_lower_range,price_upper_range))
+        
+        products = Product.objects.filter(q).order_by(ordering)
+        
+        page               = int(request.GET.get('PageNo',1))
+        product_number     = len(products)
+        showing_number     = int(request.GET.get('Show',10))        
+
+        if page <= (product_number // showing_number):
+            product_in_page = products[showing_number*(page-1) : showing_number*page]
+        else:
+            product_in_page = products[showing_number*(page-1) : showing_number*(page-1) + product_number % showing_number]
+
+        product_list=[
             {
                 'id'            : product.id,
                 'name'          : product.name,
                 'price'         : product.price,
-                'image'         : product_images,
-                'product_stock' : product_stocks,
-                'season'        : product_seasons,
-                'color'         : product_colors,
+                'image'         : [
+                    {
+                    'name'      :image.image_classification.name, 
+                    'image_url' : image.image_url
+                    } for image in product.image_set.all()],
+                'product_stock' : [
+                    {
+                    'size'      :size.name,
+                    'stock'     :ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()]
                 }
-            )
-        return JsonResponse({'product_info': product_info}, status=200)
+            for product in product_in_page]
+        
+
+        return JsonResponse({'category_name':Category.objects.get(id=category).name if category else None,'product_list':product_list}, status=200)
+
+class ProductDetailView(View):
+    def get(self, request, product_id):
+        product = Product.objects.get(id=product_id)
+        product_info   = [
+            {
+                'id'               : product.id,
+                'name'             : product.name,
+                'price'            : product.price,
+                'image'            : [{
+                    'name'         :image.image_classification.name,
+                    'image_url'    : image.image_url} for image in product.image_set.all()],
+                'product_stock'    : [
+                    {
+                    'size'         :size.name,
+                    'stock'        :ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],
+                'season'           : [season.name for season in product.season.all()],
+                'color'            : [
+                    {
+                    'product_id'   :color_product.id,
+                    'product_image':color_product.image_set.all()[0].image_url} for color_product in Product.objects.filter(name=product.name)],
+                }
+            ]
+        return JsonResponse({'MESSAGE':'SUCCESS','product_info': product_info}, status=200)
