@@ -1,32 +1,36 @@
 import json
 
-
 from django.http            import JsonResponse
-
 from django.views           import View
-from django.db.models       import Q
 from products.models        import Product,ProductDetail
 from carts.models           import ProductDetailOrder,Order
 from users.models           import User
 from models                 import Review,ReviewPhoto,Wishlist
+from utils                  import login_required
 
-
-
-
+@login_required
 class ReviewCreateView(View):
     def post(self,request):
         data=json.loads(request.body)
 
+        rating         = data['rating']
+        comment        = data['comment']
+        color_review   = data['color_review']
+        size_review    = data['size_review']
+        product_detail = ProductDetail.objects.get(product_id=data['product_id'], size_id=data['size_id']).id
+        image_url      = data.get('image_url', None)
+        review_id      =
+
         review = Review.objects.create(
-                 rating         = data['rating'],
-                 comment        = data['comment'],
-                 color_review   = data['color_review'],
-                 size_review    = data['size_review'],
-                 product_detail = ProductDetail.objects.get(product_id=data['product_id'], size_id=data['size_id']).id
+                 rating         = rating,
+                 comment        = comment,
+                 color_review   = color_review,
+                 size_review    = size_review,
+                 product_detail = product_detail
                  )
 
         ReviewPhoto.objects.create(
-                 image_url=data.get('image_url', None),
+                 image_url=image_url,
                  review_id=review.id
                  )
 
@@ -66,4 +70,5 @@ class WishListShowView(View):
         data = json.loads(request.body)
 
         return JsonResponse({'data': json.dumps(data)}, status=200)
+
 

@@ -357,4 +357,12 @@ zsdoc/data
 /tests/_output/*
 !/tests/_output/.gitkeep
 
+#my ignore
+.idea/19-1st-hikicovery-backend.iml'
+.idea/inspectionProfiles/Project_Default.xml'
+.idea/inspectionProfiles/profiles_settings.xml'
+.idea/misc.xml'
+.idea/modules.xml'
+.idea/vcs.xml'
+
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm,vscode,vim,macos,linux,zsh
