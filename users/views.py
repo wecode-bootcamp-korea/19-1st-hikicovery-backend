@@ -1,15 +1,15 @@
-import json, traceback
+import json
 import bcrypt
 import jwt
 
-from django.http import JsonResponse
+from django.http            import JsonResponse
 from django.core.exceptions import ValidationError
-from django.views import View
-from django.db.models import Q
+from django.views           import View
+from django.db.models       import Q
 
-from users.models import User
-from users.validations import validate_email, validate_phone, validate_password, validate_account
-
+from users.models           import User
+from users.validations      import validate_email, validate_phone, validate_password, validate_account
+from my_settings            import SECRET_KEY
 
 class SignUpView(View):
     def post(self,request):
@@ -52,7 +52,7 @@ class SignUpView(View):
                 phone_number = phone_number,
                 email        = email,
                 birthday     = birthday,
-                address      = data.get('address', null),
+                address      = data.get('address', ''),
                 mileage      = data.get('mileage', 3500),
             )
             return JsonResponse({'message': 'SUCCESS', "user_account": account}, status=201)
@@ -82,7 +82,7 @@ class LogInView(View):
             if not bcrypt.checkpw(password.encode('utf-8'), user_account.password.encode('utf-8')):
                 return JsonResponse({'message': 'INCORRECT_PASSWORD'}, status=400)
 
-            access_token = jwt.encode({'id': user_account.id}, 'secret', algorithm='HS256')
+            access_token = jwt.encode({'id': user_account.id}, SECRET_KEY['secret'], algorithm='HS256')
             return JsonResponse({'token': access_token, 'message': 'SUCCESS', 'user_account': account},
                                 status=200)
         except ValidationError:
