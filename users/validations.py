@@ -13,10 +13,10 @@ def validate_email(value):
         return True
 
 def validate_phone(value):
-    PHONE_REG = r"([0-9]{3}-[0-9]{4}-[0-9]{4})"
-    regex = re.compile(PHONE_REG)
-
-    if regex.match(value):
+   PHONE_REG = r"([0-9]{3}-[0-9]{4}-[0-9]{4})"
+   regex = re.compile(PHONE_REG)
+   
+   if regex.match(value):
         return True
 
 def validate_password(value):
