@@ -1,13 +1,13 @@
 import json
 from datetime import datetime
 
-from django.http import JsonResponse
+from django.http  import JsonResponse
 from django.views import View
 
-from carts.models import ProductDetailOrder, Order, UserCoupon, Coupon
+from carts.models    import ProductDetailOrder, Order, UserCoupon, Coupon
 from products.models import ProductDetail, Product, Size, Color
-from users.models import User
-from carts.utils import GetProductDetail
+from users.models    import User
+from carts.utils     import GetProductDetail
 
 
 class CartView(View):
@@ -19,7 +19,7 @@ class CartView(View):
             size     = data['size']
             quantity = data['quantity']
 
-            if not Order.objects.filter(status=1, user_id=user):
+            if not Order.objects.filter(status=1, user_id=user.id):
                 Order.objects.create(
                         status      = 1,
                         is_delivery = 1,
@@ -27,8 +27,8 @@ class CartView(View):
                         )
             product_detail = ProductDetail.objects.get(product_id=product, size_id=size)
 
-            if ProductDetailOrder.objects.filter(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id):
-                product_detail_order = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id)    
+            if ProductDetailOrder.objects.filter(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1):
+                product_detail_order = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1)    
                 product_detail_order.quantity = product_detail_order.quantity + quantity
                 product_detail_order.save()
 
@@ -72,7 +72,7 @@ class OrderView(View):
                 size     = this_data['size']
                 quantity = this_data['quantity']
                 product_detail       = ProductDetail.objects.get(product_id=product, size_id=size)
-                product_detail_order = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id)
+                product_detail_order = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1)
                 product_detail_order.quantity = quantity
                 product_detail_order.save()
 
