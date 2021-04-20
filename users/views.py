@@ -9,7 +9,7 @@ from django.db.models       import Q
 
 from users.models           import User
 from users.validations      import validate_email, validate_phone, validate_password, validate_account
-from my_settings            import SECRET_KEY
+from my_settings            import SECRET_KEY,algorithm
 
 class SignUpView(View):
     def post(self,request):
@@ -82,7 +82,7 @@ class LogInView(View):
             if not bcrypt.checkpw(password.encode('utf-8'), user_account.password.encode('utf-8')):
                 return JsonResponse({'message': 'INCORRECT_PASSWORD'}, status=400)
 
-            access_token = jwt.encode({'id': user_account.id}, SECRET_KEY['secret'], algorithm='HS256')
+            access_token = jwt.encode({'id': user_account.id}, SECRET_KEY['secret'], algorithm = algorithm)
             return JsonResponse({'token': access_token, 'message': 'SUCCESS', 'user_account': account},
                                 status=200)
         except ValidationError:
