@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.http import JsonResponse
 from django.views import View
@@ -13,7 +14,10 @@ class CartView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            user = User.objects.get(id=1)
+            user     = User.objects.get(id=1)
+            product  = data['product']
+            size     = data['size']
+            quantity = data['quantity']
 
             if not Order.objects.filter(status=1, user_id=user):
                 Order.objects.create(
@@ -21,16 +25,16 @@ class CartView(View):
                         is_delivery = 1,
                         user        = user
                         )
-            this_product         = Product.objects.get(name=data['product'], color=Color.objects.get(name=data['color']))
-            this_size            = Size.objects.get(name=data['size'])
-            product_detail       = ProductDetail.objects.get(product_id=this_product.id, size_id=this_size.id)
-            try:
-                if product_detail_order := ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id):
-                    product_detail_order.quantity = int(product_detail_order.quantity) + int(data['quantity'])
-                    product_detail_order.save()
-            except:
+            product_detail = ProductDetail.objects.get(product_id=product, size_id=size)
+
+            if ProductDetailOrder.objects.filter(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id):
+                product_detail_order = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id)    
+                product_detail_order.quantity = product_detail_order.quantity + quantity
+                product_detail_order.save()
+
+            else:
                 ProductDetailOrder.objects.create(
-                    quantity          = data['quantity'],
+                    quantity          = quantity,
                     product_detail_id = product_detail.id,
                     order_id          = Order.objects.get(user_id=1, status=1).id
                     )
@@ -65,12 +69,9 @@ class OrderView(View):
 
             for this_data in data:
                 product  = this_data['product']
-                color    = this_data['color']
                 size     = this_data['size']
                 quantity = this_data['quantity']
-                order_product        = Product.objects.get(name=product, color=Color.objects.get(name=color))
-                order_size           = Size.objects.get(name=size)
-                product_detail       = ProductDetail.objects.get(product_id=order_product.id, size_id=order_size.id)
+                product_detail       = ProductDetail.objects.get(product_id=product, size_id=size)
                 product_detail_order = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order_id=Order.objects.get(user_id=user.id, status=1).id)
                 product_detail_order.quantity = quantity
                 product_detail_order.save()
@@ -110,20 +111,54 @@ class OrderView(View):
         except User.DoesNotExist:
             return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
 
+class Ordered(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            user = User.objects.get(id=1)
+            now  = datetime.now().strftime('%Y-%m-%d')
+
+            using_mileage = data['using_mileage']
+            using_coupon  = data['using_coupon']
+
+            this_order  = Order.objects.get(user=user, status=1)
+            if using_mileage != 0:
+                this_order.using_mileage = using_mileage
+                user.mileage -= using_mileage
+                user.save()
+
+            if using_coupon != 0:
+                now_using_coupon = UserCoupon.objects.get(coupon_id=using_coupon, user_id=user.id)
+                now_using_coupon.used_at = now
+                now_using_coupon.save()
+                this_order.user_coupon_id = now_using_coupon.id
+
+            this_order.status = 2
+            this_order.save()
+
+            return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
+
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEYERROR"}, status=400)
+
+        except User.DoesNotExist:
+            return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
+
+
 class CouponView(View):
     def get(self, request):
         try:
             user = User.objects.get(id=1)
             show_coupon_list = []
 
-            coupon_list=UserCoupon.objects.filter(user_id=user.id)
+            coupon_list = UserCoupon.objects.filter(user_id=user.id)
 
-            if counpon_list.exists():
+            if coupon_list.exists():
                 show_coupon_list = [{
                     "name"        : coupons.coupon.name,
                     "is_online"   : coupons.coupon.is_online,
                     "discountrate": coupons.coupon.discount_rate,
-                    "duration"    : coupons.coupon.duration
+                    "duration"    : coupons.coupon.duration_days
                             } for coupons in coupon_list if not coupons.used_at]
 
             return JsonResponse({"MESSAGE" : show_coupon_list}, status=200)
@@ -133,5 +168,3 @@ class CouponView(View):
 
         except User.DoesNotExist:
             return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
-
-
