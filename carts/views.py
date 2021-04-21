@@ -88,20 +88,13 @@ class OrderView(View):
         try:
             user = User.objects.get(id=1)
 
-            show_order_list = []
-
-            show_cart_list = GetProductDetail(user.id)
-
-            order_user_info = {
+            show_order_list = [{
                     "name"    : user.name,
                     "phone"   : user.phone_number,
                     "email"   : user.email,
                     "address" : user.address,
                     "mileage" : user.mileage,
-                    }
-
-            show_order_list.append(order_user_info)
-            show_order_list.append(show_cart_list)
+                    }, GetProductDetail(user.id)]
 
             return JsonResponse({"MESSAGE" : show_order_list}, status=200)
 
@@ -121,9 +114,9 @@ class Ordered(View):
             using_mileage = data['using_mileage']
             using_coupon  = data['using_coupon']
 
-            this_order  = Order.objects.get(user=user, status=1)
+            ordered  = Order.objects.get(user=user, status=1)
             if using_mileage != 0:
-                this_order.using_mileage = using_mileage
+                ordered.using_mileage = using_mileage
                 user.mileage -= using_mileage
                 user.save()
 
@@ -131,10 +124,10 @@ class Ordered(View):
                 now_using_coupon = UserCoupon.objects.get(coupon_id=using_coupon, user_id=user.id)
                 now_using_coupon.used_at = now
                 now_using_coupon.save()
-                this_order.user_coupon_id = now_using_coupon.id
+                ordered.user_coupon_id = now_using_coupon.id
 
-            this_order.status = 2
-            this_order.save()
+            ordered.status = 2
+            ordered.save()
 
             return JsonResponse({"MESSAGE" : "SUCCESS"}, status=200)
 
@@ -148,8 +141,7 @@ class Ordered(View):
 class CouponView(View):
     def get(self, request):
         try:
-            user = User.objects.get(id=1)
-            show_coupon_list = []
+            user = User.objects.get(id=2)
 
             coupon_list = UserCoupon.objects.filter(user_id=user.id)
 
@@ -160,8 +152,10 @@ class CouponView(View):
                     "discountrate": coupons.coupon.discount_rate,
                     "duration"    : coupons.coupon.duration_days
                             } for coupons in coupon_list if not coupons.used_at]
+                
+                return JsonResponse({"MESSAGE" : show_coupon_list}, status=200)
 
-            return JsonResponse({"MESSAGE" : show_coupon_list}, status=200)
+            return JsonResponse({"MESSAGE" : "No_COUPONS"}, status=200)
 
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEYERROR"}, status=400)
