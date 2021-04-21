@@ -1,6 +1,5 @@
 import jwt
-import my_settings
-
+from my_settings  import algorithm,SECRET_KEY
 from django.http  import JsonResponse
 from users.models import User
 
@@ -10,7 +9,7 @@ def login_required(func):
             # data = json.loads(request.body)
             # encoded_token = request.body['token']
             encoded_token = request.headers['Authorization']
-            decoded_token = jwt.decode(encoded_token, my_settings.SECRET['secret'], algorithms=my_settings.algorithm)
+            decoded_token = jwt.decode(encoded_token, SECRET_KEY, algorithms=algorithm)
             user = User.objects.filter(id=decoded_token['id'])
             if user.exists():
                 request.user = user
