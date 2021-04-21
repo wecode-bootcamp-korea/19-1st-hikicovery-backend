@@ -1,4 +1,5 @@
 import json
+import math
 
 from django.http  import JsonResponse
 from django.views import View
@@ -17,15 +18,15 @@ class BestItemView(View):
                     'price'         : product.price,    
                     'image'         : [
                         {
-                        'name'      :image.image_classification.name,
+                        'name'      : image.image_classification.name,
                         'image_url' : image.image_url} for image in product.image_set.all()],
                     'product_stock' : [
                         {
-                        'size' :size.name,
-                        'stock':ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],                       
+                        'size' :product_detail.size.name,
+                        'stock':product_detail.stock} for product_detail in product.productdetail_set.all()],                       
                     }                        
-                for product in products[:(SHOW_NUMBER-1)]]
-        return JsonResponse({'MESSAGE':'SUCCESS','best_items':best_items}, status=200)
+                for product in products[:SHOW_NUMBER]]
+        return JsonResponse({'best_items':best_items}, status=200)
 
 class ProductView(View):
     def get(self, request):
@@ -43,13 +44,13 @@ class ProductView(View):
             q &= Q(color_name__in = color)
         if size:
             q &= Q(size__name__in = size)
-        q &= Q(price__range = (int(price_lower_range),int(price_upper_range)))
+        q &= Q(price__range = (price_lower_range,price_upper_range))
         
         products = Product.objects.filter(q).order_by(ordering)
         
         page               = int(request.GET.get('PageNo',1))
         product_number     = len(products)
-        showing_number     = int(request.GET.get('Show',10))        
+        showing_number     = int(request.GET.get('Show',12))        
 
         if page <= (product_number // showing_number):
             product_in_page = products[showing_number*(page-1) : showing_number*page]
@@ -63,17 +64,18 @@ class ProductView(View):
                 'price'         : product.price,
                 'image'         : [
                     {
-                    'name'      :image.image_classification.name, 
+                    'name'      : image.image_classification.name, 
                     'image_url' : image.image_url
                     } for image in product.image_set.all()],
                 'product_stock' : [
                     {
-                    'size'      :size.name,
-                    'stock'     :ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()]
+                    'size'      :product_detail.size.name,
+                    'stock'     :product_detail.stock} for product_detail in product.productdetail_set.all()]
                 }
             for product in product_in_page]
         
-        return JsonResponse({'MESSAGE':'SUCCESS','category_name':Category.objects.get(id=category).name if category else None,'product_list':product_list}, status=200)
+
+        return JsonResponse({'category_name':Category.objects.get(id=category).name if category else None,'product_list':product_list, 'max_page':math.ceil(product_number/showing_number)}, status=200)
 
 class ProductDetailView(View):
     def get(self, request, product_id):
@@ -89,8 +91,8 @@ class ProductDetailView(View):
                         'image_url'    : image.image_url} for image in product.image_set.all()],
                     'product_stock'    : [
                         {
-                        'size'         :size.name,
-                        'stock'        :ProductDetail.objects.get(size_id=size.id,product_id=product.id).stock} for size in product.size.all()],
+                        'size'         : product_detail.size.name,
+                        'stock'        : product_detail.stock} for product_detail in product.productdetail_set.all()],
                     'season'           : [season.name for season in product.season.all()],
                     'color'            : [
                         {
@@ -100,4 +102,4 @@ class ProductDetailView(View):
                 ]
             return JsonResponse({'MESSAGE':'SUCCESS','product_info': product_info}, status=200)
         except Product.DoesNotExist:
-            return JsonResponse({'MESSAGE':'PRODUCT_DOES_NOT_EXIST'}, status=400)            
+            return JsonResponse({'MESSAGE':'PRODUCT_DOES_NOT_EXIST'}, status=200)            
