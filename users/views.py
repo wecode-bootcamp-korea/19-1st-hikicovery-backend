@@ -53,10 +53,10 @@ class SignUpView(View):
                 phone_number = phone_number,
                 email        = email,
                 birthday     = birthday,
-                address      = data.get('address', ''),
+                address      = data.get('address', None),
                 mileage      = data.get('mileage', 3500),
             )
-            return JsonResponse({'message': 'SUCCESS', "user_account": account}, status=201)
+            return JsonResponse({'message': 'SUCCESS'}, status=201)
 
         except ValidationError:
             return JsonResponse({'message': 'VALIDATION_ERROR'}, status=400)
@@ -83,7 +83,7 @@ class LogInView(View):
             if not bcrypt.checkpw(password.encode('utf-8'), user_account.password.encode('utf-8')):
                 return JsonResponse({'message': 'INCORRECT_PASSWORD'}, status=400)
              
-            access_token = jwt.encode({'id': user_account.id}, SECRET_KEY['secret'], algorithm = algorithm)
+            access_token = jwt.encode({'id': user_account.id}, SECRET_KEY = SECRET_KEY, algorithm = algorithm)
             return JsonResponse({'token': access_token, 'message':'SUCCESS'}, status=200)
         except ValidationError:
             return JsonResponse({'message': 'VALIDATION_ERROR'}, status=400)
