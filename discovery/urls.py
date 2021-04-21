@@ -19,6 +19,6 @@ from carts.views import CartView, Ordered
 urlpatterns = [
         path('order', include('carts.urls')),
         path('cart', CartView.as_view()),
-        path('ordered', Ordered.as_view())
-        path('users', include('users.urls')),
+        path('ordered', Ordered.as_view()),
+        path('users', include('users.urls'))
 ]
