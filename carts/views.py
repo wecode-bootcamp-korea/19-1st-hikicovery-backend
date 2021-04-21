@@ -14,12 +14,12 @@ class CartView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            user     = User.objects.get(id=1)
+            user     = request.user
             product  = data['product']
             size     = data['size']
             quantity = data['quantity']
 
-            if not Order.objects.filter(status=1, user_id=user.id):
+            if not Order.objects.filter(status=1, user_id=user.id).exists():
                 Order.objects.create(
                         status      = 1,
                         is_delivery = 1,
@@ -28,9 +28,9 @@ class CartView(View):
 
             product_detail = ProductDetail.objects.get(product_id=product, size_id=size)
 
-            if ProductDetailOrder.objects.filter(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1):
-                product_detail_order          = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1)    
-                product_detail_order.quantity = product_detail_order.quantity + quantity
+            if ProductDetailOrder.objects.filter(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1).exists():
+                product_detail_order           = ProductDetailOrder.objects.get(product_detail_id=product_detail.id, order__user_id=user.id, order__status=1)    
+                product_detail_order.quantity += quantity
                 product_detail_order.save()
 
             else:
@@ -50,7 +50,8 @@ class CartView(View):
 
     def get(self, request):
         try:
-            show_cart_list = GetProductDetail(1)
+            user = request.user
+            show_cart_list = GetProductDetail(user.id)
 
             return JsonResponse({"MESSAGE" : show_cart_list}, status=200)
 
@@ -64,7 +65,7 @@ class OrderView(View):
     def post(self, request):
         datas = json.loads(request.body)
         try:
-            user = User.objects.get(id=1)
+            user = request.user
 
             for data in datas:
                 product  = data['product']
@@ -86,13 +87,14 @@ class OrderView(View):
 
     def get(self, request):
         try:
+            user =  request.user
             show_order_list = [{
                     "name"    : user.name,
                     "phone"   : user.phone_number,
                     "email"   : user.email,
                     "address" : user.address,
                     "mileage" : user.mileage,
-                    }, GetProductDetail(1)]
+                    }, GetProductDetail(user.id)]
 
             return JsonResponse({"MESSAGE" : show_order_list}, status=200)
 
@@ -106,7 +108,7 @@ class Ordered(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            user = User.objects.get(id=1)
+            user = request.user
             now  = datetime.now().strftime('%Y-%m-%d')
 
             using_mileage = data['using_mileage']
@@ -141,7 +143,8 @@ class Ordered(View):
 class CouponView(View):
     def get(self, request):
         try:
-            coupon_list = UserCoupon.objects.filter(user_id=1)
+            user = request.user
+            coupon_list = UserCoupon.objects.filter(user_id=user.id)
 
             if coupon_list.exists():
                 show_coupon_list = [{
