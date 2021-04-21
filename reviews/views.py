@@ -54,7 +54,7 @@ class ReviewShowView(View):
                 'color'         : Product.color_id
 
             }
-        return JsonResponse({'data': json.dumps(data)}, status=200)
+        return JsonResponse({'data': data}, status=200)
 
 class WishListCreateView(View):
     def post(self,request):
@@ -69,6 +69,6 @@ class WishListShowView(View):
     def get(self,request):
         data = json.loads(request.body)
 
-        return JsonResponse({'data': json.dumps(data)}, status=200)
+        return JsonResponse({'data': data}, status=200)
 
 
