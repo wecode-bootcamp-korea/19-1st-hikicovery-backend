@@ -5,7 +5,7 @@ from django.views           import View
 from products.models        import Product,ProductDetail
 from users.models           import User
 from carts.models           import Order
-from reviews.models         import Review,ReviewPhoto,Wishlist
+from reviews.models         import Review,ReviewPhoto
 from utils                  import login_required
 
 @login_required
@@ -32,11 +32,14 @@ class ReviewCreateView(View):
             user_id        = user_id
             )
 
-        image_url = data.get('image_url', None)
-        review = Review.objects.get(user_id=user_id, product_detail=product_detail)
+        image_url      = data.get('image_url', None)
+        image_url_list = []
+        image_url_list.append(image_url)
+
+        review     = Review.objects.get(user_id=user_id, product_detail=product_detail)
 
         ReviewPhoto.objects.create(
-                 image_url = image_url,
+                 image_url = image_url_list,
                  review    = review,
                  )
         return JsonResponse({'message':'REVIEW_POSTED'},status=200)
