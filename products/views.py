@@ -54,7 +54,7 @@ class ProductView(View):
             showing_number     = int(request.GET.get('Show',12))        
 
             if page <= (product_number // showing_number):
-                product_in_page = products[showing_numbe  r*(page-1) : showing_number*page]
+                product_in_page = products[showing_number*(page-1) : showing_number*page]
             else:
                 product_in_page = products[showing_number*(page-1) : showing_number*(page-1) + product_number % showing_number]
 
