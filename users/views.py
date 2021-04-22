@@ -10,6 +10,8 @@ from django.db.models       import Q
 from users.models           import User
 from users.validations      import validate_email, validate_phone, validate_password, validate_account
 from my_settings            import SECRET_KEY,algorithm
+from utils import login_required
+
 
 class SignUpView(View):
     def post(self,request):

@@ -6,11 +6,9 @@ from users.models import User
 def login_required(func):
     def decorator(self, request, *args, **kwargs):
         try:
-            # data = json.loads(request.body)
-            # encoded_token = request.body['token']
-            encoded_token = request.headers['Authorization']
-            decoded_token = jwt.decode(encoded_token, SECRET_KEY, algorithms=algorithm)
-            user = User.objects.filter(id=decoded_token['id'])
+            access_token = request.headers['Authorization']
+            token = jwt.decode(access_token, SECRET_KEY, algorithms=algorithm)
+            user = User.objects.filter(id=token['id'])
             if user.exists():
                 request.user = user
                 return func(self, request, *args, **kwargs)

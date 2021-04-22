@@ -1,7 +1,8 @@
-from django.urls import (path)
-from reviews.views import ReviewCreateView, ReviewShowView
+from django.urls import path, include
+from reviews.views import ReviewView
+from utils      import login_required
 
 urlpatterns = [
-    path('/create', ReviewCreateView.as_view()),
-    path('/show', ReviewShowView.as_view()),
+    path('/<int:product_id>', ReviewView.as_view()),
+    path('/review',ReviewView.as_view()),
     ]

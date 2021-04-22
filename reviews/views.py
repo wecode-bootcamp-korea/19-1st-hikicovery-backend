@@ -8,20 +8,20 @@ from carts.models           import Order
 from reviews.models         import Review,ReviewPhoto
 from utils                  import login_required
 
-@login_required
-class ReviewCreateView(View):
+
+class ReviewView(View):
+    #@login_required
     def post(self,request):
         data=json.loads(request.body)
-
-        if not Order.objects.get(id=data['order_id']).exists():
-            return JsonResponse({'message': 'INVALID_REQUEST'}, status=400)
 
         rating         = data['rating']
         comment        = data['comment']
         color_review   = data['color_review']
         size_review    = data['size_review']
-        product_detail = data['product_detail_id']
+        product_detail = ProductDetail.objects.get(id=['product_detail_id']).id
         user_id        = data['user_id']
+        image_url      = data.get('image_url',None)
+
 
         Review.objects.create(
             rating         = rating,
@@ -32,56 +32,40 @@ class ReviewCreateView(View):
             user_id        = user_id
             )
 
-        image_url      = data.get('image_url', None)
-        image_url_list = []
-        image_url_list.append(image_url)
-
-        review     = Review.objects.get(user_id=user_id, product_detail=product_detail)
+        review = Review.objects.get(user_id=user_id, product_detail=product_detail)
 
         ReviewPhoto.objects.create(
-                 image_url = image_url_list,
+                 image_url = image_url,
                  review    = review,
                  )
         return JsonResponse({'message':'REVIEW_POSTED'},status=200)
 
-class ReviewShowView(View):
-    def get(self,request):
-        data = json.loads(request.body)
 
-        if not Product.objects.filter(name=data['product_name']).exists():
-            return JsonResponse({'message':'ITEM_NOT_EXIST'})
+    def get(self,request,product_id):
+        target_products = ProductDetail.objects.filter(product_id=product_id)
+        size_review_options  = ['small', 'good', 'big']
+        color_review_options = ['bad', 'so-so', 'nice']
 
-        product_review = Review.objects.get(id = data['review_id'])
+        review_list = []
+        for target_product in target_products:
+            for review in target_product.review_set.all():
+                
+                data={
+                    'rating'      : review.rating,
+                    'comment'     : review.comment,
+                    'color_review': color_review_options[review.color_review],
+                    'size_review' : size_review_options[review.size_review],
+                    'create_at'   : review.create_at,
+                    'update_at'   : review.update_at,
+                    'color'       : review.product_detail.product.color.name,
+                    'size'        : review.product_detail.size.name,
+                    'user_id'     : review.user_id.account,
+                    'image'       : [image.image_url for image in review.reviewphoto_set.all()]
+                }
 
-        data = {
-            'rating'        : product_review.rating,
-            'comment'       : product_review.comment,
-            'color_review'  : product_review.color_review,
-            'size_review'   : product_review.size_review,
-            'create_at'     : product_review.create_at,
-            'update_at'     : product_review.update_at,
-            'product_detail': product_review.product_detail,
-            'review_photo'  : [photo for photo in ReviewPhoto.objects.filter(review=data['review_id'])],
-            'size'          : product_review.product_detail.product.size,
-            'color'         : product_review.product_detail.product.color,
-        }
+                review_list.append(data)
 
-        return JsonResponse({'data': data}, status=200)
+        return JsonResponse({'data': review_list}, status=200)
 
-#class WishListCreateView(View):
-#    def post(self,request):
-#        data = json.loads(request.body)
-#
-#        Wishlist.objects.create(
-#            user_id    = User.objects.get(id=data['user_id']).account,
-#            product_id = Product.objects.get(id=data['product_id']).name,
-#        )
-#
-#class WishListShowView(View):
-#    def get(self,request):
-#
-#
-#
-#        return JsonResponse({'data': data}, status=200)
-
+                  
 
