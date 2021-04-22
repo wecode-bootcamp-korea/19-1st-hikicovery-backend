@@ -11,6 +11,7 @@ from carts.utils     import GetProductDetail
 
 
 class CartView(View):
+    @login_required
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -48,6 +49,7 @@ class CartView(View):
         except User.DoesNotExist:
             return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
 
+    @login_required
     def get(self, request):
         try:
             user = request.user
@@ -62,6 +64,7 @@ class CartView(View):
             return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
 
 class OrderView(View):
+    @login_required
     def post(self, request):
         datas = json.loads(request.body)
         try:
@@ -85,6 +88,7 @@ class OrderView(View):
         except User.DoesNotExist:
             return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
 
+    @login_required
     def get(self, request):
         try:
             user =  request.user
@@ -105,6 +109,7 @@ class OrderView(View):
             return JsonResponse({"MESSAGE" : "DOESNOT_EXIST_USER"}, status=400)
 
 class Ordered(View):
+    @login_required
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -141,6 +146,7 @@ class Ordered(View):
 
 
 class CouponView(View):
+    @login_required
     def get(self, request):
         try:
             user = request.user
