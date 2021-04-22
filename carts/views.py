@@ -8,6 +8,7 @@ from carts.models    import ProductDetailOrder, Order, UserCoupon, Coupon
 from products.models import ProductDetail, Product, Size, Color
 from users.models    import User
 from carts.utils     import GetProductDetail
+from utils           import login_required
 
 
 class CartView(View):
