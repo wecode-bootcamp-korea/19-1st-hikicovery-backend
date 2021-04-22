@@ -18,7 +18,7 @@ class ReviewView(View):
         comment        = data['comment']
         color_review   = data['color_review']
         size_review    = data['size_review']
-        product_detail = ProductDetail.objects.get(id=['product_detail_id']).id
+        product_detail = ProductDetail.objects.get(id=data['product_detail_id']).id
         user_id        = data['user_id']
         image_url      = data.get('image_url',None)
 
